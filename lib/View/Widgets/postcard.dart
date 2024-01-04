@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:superstate/View/Widgets/profile_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'error.dart';
 import 'loading.dart';
@@ -14,9 +16,12 @@ Widget postCard(
     int upCount,) {
   
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
 
       topPart(uid, creationTime),
+
+      postTextWidget(postText),
 
       const Divider(),
 
@@ -67,7 +72,7 @@ Widget topPart(String uid, Timestamp creationTime) {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           );
         }
@@ -81,6 +86,23 @@ Widget topPart(String uid, Timestamp creationTime) {
           );
         }
       },
+  );
+}
+
+Widget postTextWidget(String postText) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 55, right: 10),
+    child: SelectableLinkify(
+      onOpen: (link) async {
+        if (!await launchUrl(Uri.parse(link.url))) {
+          throw Exception('Could not launch ${link.url}');
+        }
+      },
+      text: postText,
+      style: const TextStyle(color: Colors.black),
+      linkStyle: const TextStyle(color: Colors.blue),
+
+    ),
   );
 }
 
