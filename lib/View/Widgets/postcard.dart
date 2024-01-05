@@ -1,9 +1,12 @@
+import 'package:any_link_preview/any_link_preview.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:icons_plus/icons_plus.dart';
+import 'package:linkify/linkify.dart';
 import 'package:superstate/View/Widgets/profile_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'error.dart';
 import 'loading.dart';
 
@@ -14,7 +17,17 @@ Widget postCard(
     String postText,
     String uid,
     int upCount,) {
-  
+
+  List links = [];
+
+  List<LinkifyElement> linkifyItems = linkify(postText);
+  for (int i = 1; i < linkifyItems.length; i = i + 2) {
+    if (linkifyItems[i] is UrlElement) {
+      UrlElement urlElement = linkifyItems[i] as UrlElement;
+      links.add(urlElement.url);
+    }
+  }
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -23,7 +36,14 @@ Widget postCard(
 
       postTextWidget(postText),
 
-      const Divider(),
+      thumbnailWidget(links),
+
+      bottomPart(),
+
+      Divider(
+        thickness: 1,
+        color: Colors.grey.shade200,
+      ),
 
     ],
   );
@@ -31,17 +51,28 @@ Widget postCard(
 
 Widget topPart(String uid, Timestamp creationTime) {
   DateTime dateTime = creationTime.toDate();
-  Duration difference = dateTime.difference(DateTime.now());
+  Duration difference = DateTime.now().difference(dateTime);
 
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.abs().toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    int inHours = duration.inHours;
 
-    if(duration.inHours.toInt() == 0){
-      return '$twoDigitMinutes minutes ago';
-    }
-    else{
-      return '${duration.abs().inHours} hour $twoDigitMinutes minutes ago';
+    if (inHours < 1) {
+      int inMinutes = duration.inMinutes.remainder(60);
+      return '$inMinutes minute${inMinutes == 1 ? '' : 's'} ago';
+    } else if (inHours < 24) {
+      int inMinutes = duration.inMinutes.remainder(60);
+      return '$inHours hour${inHours == 1 ? '' : 's'} $twoDigits(inMinutes) minute${inMinutes == 1 ? '' : 's'} ago';
+    } else if (inHours < 24 * 7) {
+      int inDays = duration.inDays;
+      return '$inDays day${inDays == 1 ? '' : 's'} ago';
+    } else if (inHours < 24 * 7 * 3) {
+      int inWeeks = (duration.inDays / 7).floor();
+      return '$inWeeks week${inWeeks == 1 ? '' : 's'} ago';
+    } else {
+      // If it's over 3 weeks, show the post's original datetime
+      // Adjust the format according to your needs
+      return 'Posted on ${dateTime.year}-${twoDigits(dateTime.month)}-${twoDigits(dateTime.day)} ${twoDigits(dateTime.hour)}:${twoDigits(dateTime.minute)}';
     }
   }
 
@@ -99,9 +130,120 @@ Widget postTextWidget(String postText) {
         }
       },
       text: postText,
-      style: const TextStyle(color: Colors.black),
-      linkStyle: const TextStyle(color: Colors.blue),
+      style: const TextStyle(
+          color: Colors.black,
+        fontSize: 12.5
+      ),
+      linkStyle: const TextStyle(
+          color: Colors.blueAccent,
+          fontSize: 12.5,
+        decoration: TextDecoration.none, // Remove underline
+      ),
+    ),
+  );
+}
 
+Widget thumbnailWidget(List links){
+  if(links.isEmpty){
+    return const SizedBox();
+  }
+  else{
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: links.length,
+      itemBuilder: (context, index) {
+        return FutureBuilder(
+          future: AnyLinkPreview.getMetadata(link: links[index]),
+          builder: (context, snapshot) {
+            if(snapshot.hasData){
+              return Padding(
+                padding: const EdgeInsets.only(left: 55, right: 20, top: 10),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade100
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              //link
+                              Text(
+                                links[index],
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.blue
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              //title
+                              Text(
+                                snapshot.data!.title ?? '',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold
+                                ),
+                              ),
+
+                              //desc
+                              Text(
+                                snapshot.data!.desc ?? '',
+                                style: TextStyle(
+                                  color: Colors.grey.shade700
+                                ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      CachedNetworkImage(
+                        width: double.infinity,
+                          imageUrl: snapshot.data!.image ?? '',
+                        fit: BoxFit.cover,
+                      ),
+
+                    ],
+                  ),
+                ),
+              );
+            }
+            else{
+              return const SizedBox();
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+Widget bottomPart() {
+  return const Padding(
+    padding: EdgeInsets.only(top: 8),
+    child: Row(
+      children: [
+        Padding(
+            padding: EdgeInsets.only(left: 55 ,right: 10),
+            child: Icon(MingCute.chat_1_line)),
+
+        Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Icon(MingCute.thumb_up_2_line)
+        ),
+
+        Icon(MingCute.thumb_down_2_line),
+      ],
     ),
   );
 }

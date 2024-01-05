@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:superstate/View/Create%20Post/create_post.dart';
 import 'package:superstate/View/Widgets/navigator.dart';
 
@@ -27,7 +28,7 @@ class HomeFloatingActionButton extends StatelessWidget {
             ),
           ),
           icon: const Icon(
-              Icons.post_add_rounded
+              MingCute.classify_add_2_fill,//Icons.post_add_rounded classify_add_2_fill
           ),
         ),
       ),

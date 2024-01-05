@@ -49,15 +49,15 @@ class _BottomBarState extends State<BottomBar> {
         }),
         items: [
           FlashyTabBarItem(
-            icon: const Icon(Icons.home_rounded),
+            icon: const Icon(MingCute.home_1_fill), //Icons.home_rounded
             title: const Text('Home'),
           ),
           FlashyTabBarItem(
-            icon: const Icon(Icons.notifications_rounded),
+            icon: const Icon(Icons.notifications_rounded), //Icons.notifications_rounded
             title: const Text('Notifications'),
           ),
           FlashyTabBarItem(
-            icon: const Icon(EvaIcons.person),
+            icon: const Icon(Icons.person), //EvaIcons.person
             title: const Text('Info'),
           ),
         ],
