@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:superstate/Blocs/Bottom%20Navigation%20Bloc/bottom_navigation_bloc.dart';
+import 'package:superstate/Blocs/Bottom%20Navigation%20Bloc/bottom_navigation_events.dart';
 import 'package:superstate/View/Widgets/bottom_nav_bar.dart';
 import 'package:superstate/View/Widgets/navigator.dart';
 import 'package:superstate/ViewModel/auth_service.dart';
@@ -79,9 +82,11 @@ class LoginPage extends StatelessWidget {
                 //Firebase Login
                 AuthService().signInWithGoogle().then((_) {
                   _checkAndSaveUser();
+                  BlocProvider.of<BottomBarBloc>(context)
+                      .add(IndexChange(currentIndex: 0));
                   ScreenNavigator.openScreen(
                       context,
-                      BottomBar(bottomIndex: 0),
+                      const BottomBar(),
                     'RightToLeft'
                   );
                 });

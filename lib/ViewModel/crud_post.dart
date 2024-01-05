@@ -23,7 +23,7 @@ class CRUDPost {
       'uid': FirebaseAuth.instance.currentUser!.uid,
       'creationTime': DateTime.now(),
       'postText': postText,
-      'upCount': 0,
+      'reactCount': 0,
       'comments': FieldValue.arrayUnion([]),
     });
 
@@ -34,6 +34,18 @@ class CRUDPost {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .update({
       'posts': FieldValue.arrayUnion([postID])
+    });
+  }
+
+  void addReact(String postDocID, int react) {
+
+    FirebaseFirestore
+        .instance
+        .collection('posts')
+        .doc(postDocID)
+        .collection('reacts')
+        .doc(FirebaseAuth.instance.currentUser!.uid).set({
+      'react': react
     });
   }
 

@@ -2,21 +2,31 @@ import 'package:any_link_preview/any_link_preview.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:linkify/linkify.dart';
+import 'package:superstate/Blocs/React%20Bloc/react_bloc.dart';
+import 'package:superstate/Blocs/React%20Bloc/react_events.dart';
+import 'package:superstate/Blocs/React%20Bloc/react_states.dart';
 import 'package:superstate/View/Widgets/profile_image.dart';
+import 'package:superstate/ViewModel/crud_post.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'error.dart';
 import 'loading.dart';
 
 Widget postCard(
+    String postDocID,
     int commentCount,
     Timestamp creationTime,
     List<dynamic> fileLinks,
     String postText,
     String uid,
-    int upCount,) {
+    int reactCount,
+    int reaction,
+    BuildContext context,
+    ReactState state,
+    int index) {
 
   List links = [];
 
@@ -38,12 +48,9 @@ Widget postCard(
 
       thumbnailWidget(links),
 
-      bottomPart(),
+      bottomPart(postDocID, reaction, context, state, index),
 
-      Divider(
-        thickness: 1,
-        color: Colors.grey.shade200,
-      ),
+      Divider(thickness: 1, color: Colors.grey.shade200,),
 
     ],
   );
@@ -218,6 +225,11 @@ Widget thumbnailWidget(List links){
                 ),
               );
             }
+            else if(snapshot.connectionState == ConnectionState.waiting){
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
             else{
               return const SizedBox();
             }
@@ -228,21 +240,39 @@ Widget thumbnailWidget(List links){
   }
 }
 
-Widget bottomPart() {
-  return const Padding(
-    padding: EdgeInsets.only(top: 8),
+Widget bottomPart(String postDocID,int reaction, BuildContext context, ReactState state, int index) {
+  final provider = BlocProvider.of<ReactBloc>(context);
+  return Padding(
+    padding: const EdgeInsets.only(top: 8),
     child: Row(
       children: [
-        Padding(
+        //comment
+        const Padding(
             padding: EdgeInsets.only(left: 55 ,right: 10),
             child: Icon(MingCute.chat_1_line)),
 
-        Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: Icon(MingCute.thumb_up_2_line)
+        //like
+        GestureDetector(
+          onTap: () {
+            CRUDPost().addReact(postDocID, 1);
+            
+            provider.add(LikeEvent(index: index));
+          },
+          child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: reaction == 1 ? const Icon(MingCute.thumb_up_2_fill) : const Icon(MingCute.thumb_up_2_line) //state.reactList[index]
+          ),
         ),
 
-        Icon(MingCute.thumb_down_2_line),
+        //dislike
+        GestureDetector(
+          onTap: () {
+            CRUDPost().addReact(postDocID, -1);
+
+            provider.add(DislikeEvent(index: index));
+          },
+            child: reaction == -1 ? const Icon(MingCute.thumb_down_2_fill) : const Icon(MingCute.thumb_down_2_line)
+        ),
       ],
     ),
   );
