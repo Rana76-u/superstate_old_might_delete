@@ -6,6 +6,7 @@ import 'package:superstate/Blocs/Bottom%20Navigation%20Bloc/bottom_navigation_bl
 import 'package:superstate/Blocs/React%20Bloc/react_bloc.dart';
 import 'package:superstate/View/Widgets/bottom_nav_bar.dart';
 import 'package:superstate/View/login.dart';
+import 'Blocs/Youtube Video Player Bloc/youtube_player_bloc.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => BottomBarBloc(),),
           BlocProvider(create: (context) => ReactBloc(),),
+          BlocProvider(create: (context) => YoutubePlayerBloc(),),
         ],
         child: MaterialApp(
           title: 'SuperState',

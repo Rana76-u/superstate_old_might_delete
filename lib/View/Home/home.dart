@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:superstate/Blocs/React%20Bloc/react_bloc.dart';
-import 'package:superstate/Blocs/React%20Bloc/react_events.dart';
 import 'package:superstate/Blocs/React%20Bloc/react_states.dart';
 import 'package:superstate/View/Home/home_appbar.dart';
 import 'package:superstate/View/Home/home_floating.dart';
@@ -32,7 +31,7 @@ class HomePage extends StatelessWidget{
       },
     );
   }
-  
+
   Widget postsWidget(ReactState state) {
     return FutureBuilder(
         future: FirebaseFirestore.instance.collection('posts').get(),
@@ -44,7 +43,6 @@ class HomePage extends StatelessWidget{
               itemCount: snapshot.data!.docs.length,
               itemBuilder: (context, index) {
 
-                final provider = BlocProvider.of<ReactBloc>(context);
 
                 return FutureBuilder(
                     future: FirebaseFirestore
@@ -57,7 +55,8 @@ class HomePage extends StatelessWidget{
 
                       int reaction = 0;
 
-                      if (reactSnapshot.connectionState == ConnectionState.done) {
+                      ///WE HAVE AN ISSUE HERE
+                      /*if (reactSnapshot.connectionState == ConnectionState.done) {
                         // Check if data has been loaded
                         if (reactSnapshot.hasData) {
                           reaction = reactSnapshot.data!.get('react');
@@ -74,7 +73,8 @@ class HomePage extends StatelessWidget{
                       } else {
                         // Data is still loading
                         // You can choose to show a loading indicator or do nothing during loading
-                      }
+                        //provider.add(NeutralEvent(index: index));
+                      }*/
 
                       /*print(index);
                       print(snapshot.data!.docs[index].id);
@@ -92,7 +92,7 @@ class HomePage extends StatelessWidget{
                           snapshot.data!.docs[index].get('postText'),
                           snapshot.data!.docs[index].get('uid'),
                           snapshot.data!.docs[index].get('reactCount'),
-                          state.reactList[index],
+                          reaction, //state.reactList[index]
                           context,
                           state,
                           index
