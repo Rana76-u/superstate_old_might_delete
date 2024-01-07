@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:like_button/like_button.dart';
 import 'package:linkify/linkify.dart';
 import 'package:superstate/Blocs/React%20Bloc/react_bloc.dart';
 import 'package:superstate/Blocs/React%20Bloc/react_events.dart';
@@ -375,41 +376,79 @@ Widget thumbnailWidget(List links){
   }
 }
 
-Widget bottomPart(String postDocID,int reaction, BuildContext context, ReactState state, int index) {
+Future<bool?> onLikeButtonTapped(int reaction, String postDocID, int index, BuildContext context) async {
   final provider = BlocProvider.of<ReactBloc>(context);
+
+  // Toggle the reaction and update the UI accordingly
+  if (reaction == 1) {
+    CRUDPost().addReact(postDocID, 0); // Unlike
+    provider.add(NeutralEvent(index: index));
+  } else {
+    CRUDPost().addReact(postDocID, 1); // Like
+    provider.add(LikeEvent(index: index));
+  }
+
+  // Return the new reaction state
+  return Future<bool?>.value(reaction != 1);
+}
+
+Future<bool?> onDislikeButtonTapped(int reaction, String postDocID, int index, BuildContext context) async {
+  final provider = BlocProvider.of<ReactBloc>(context);
+
+  // Toggle the reaction and update the UI accordingly
+  if (reaction == -1) {
+    CRUDPost().addReact(postDocID, 0); // Undislike
+    provider.add(NeutralEvent(index: index));
+  } else {
+    CRUDPost().addReact(postDocID, -1); // Dislike
+    provider.add(DislikeEvent(index: index));
+  }
+
+  // Return the new reaction state
+  return Future<bool?>.value(reaction != -1);
+}
+
+Widget bottomPart(String postDocID, int reaction, BuildContext context, ReactState state, int index) {
+  final provider = BlocProvider.of<ReactBloc>(context);
+
   return Padding(
     padding: const EdgeInsets.only(top: 8),
     child: Row(
       children: [
-        //comment
+        // Comment
         const Padding(
-            padding: EdgeInsets.only(left: 55 ,right: 10),
-            child: Icon(MingCute.chat_1_line)),
+          padding: EdgeInsets.only(left: 55, right: 10),
+          child: Icon(MingCute.chat_1_line),
+        ),
 
-        //like
-        GestureDetector(
-          onTap: () {
-            CRUDPost().addReact(postDocID, 1);
-
-            provider.add(LikeEvent(index: index));
-          },
-          child: Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: reaction == 1 ? const Icon(MingCute.thumb_up_2_fill) : const Icon(MingCute.thumb_up_2_line)
+        // Like
+        Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: LikeButton(
+            isLiked: reaction == 1,
+            likeBuilder: (isLiked) {
+              return isLiked
+                  ? const Icon(MingCute.thumb_up_2_fill)
+                  : const Icon(MingCute.thumb_up_2_line);
+            },
+            onTap: (isLiked) {
+              return onLikeButtonTapped(reaction, postDocID, index, context);
+            },
           ),
         ),
 
-        //dislike
+        // Dislike
         GestureDetector(
-            onTap: () {
-              CRUDPost().addReact(postDocID, -1);
-
-              provider.add(DislikeEvent(index: index));
-            },
-            child: reaction == -1 ? const Icon(MingCute.thumb_down_2_fill) : const Icon(MingCute.thumb_down_2_line)
+          onTap: () {
+            onDislikeButtonTapped(reaction, postDocID, index, context);
+          },
+          child: reaction == -1
+              ? const Icon(MingCute.thumb_down_2_fill)
+              : const Icon(MingCute.thumb_down_2_line),
         ),
       ],
     ),
   );
 }
+
 
