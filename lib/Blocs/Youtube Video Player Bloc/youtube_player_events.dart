@@ -1,5 +1,5 @@
 abstract class YoutubePlayerEvents {}
 
-class YoutubePlayerOnReadyEvent extends YoutubePlayerEvents {}
+class YoutubePlayerMuteEvent extends YoutubePlayerEvents {}
 
-class YoutubePlayerOnEndedEvent extends YoutubePlayerEvents {}
+class YoutubePlayerUnMuteEvent extends YoutubePlayerEvents {}

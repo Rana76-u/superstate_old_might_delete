@@ -10,6 +10,8 @@ import 'package:superstate/View/Widgets/error.dart';
 import 'package:superstate/View/Widgets/loading.dart';
 import 'package:superstate/View/Widgets/postcard.dart';
 
+import '../../Blocs/React Bloc/react_events.dart';
+
 class HomePage extends StatelessWidget{
   const HomePage({super.key});
 
@@ -55,16 +57,16 @@ class HomePage extends StatelessWidget{
 
                       int reaction = 0;
 
-                      ///WE HAVE AN ISSUE HERE
-                      /*if (reactSnapshot.connectionState == ConnectionState.done) {
+                      final provider = BlocProvider.of<ReactBloc>(context);
+
+                      if (reactSnapshot.connectionState == ConnectionState.done) {
                         // Check if data has been loaded
-                        if (reactSnapshot.hasData) {
-                          reaction = reactSnapshot.data!.get('react');
+                        if (reactSnapshot.hasData && reactSnapshot.data!.exists) {
+                          reaction = reactSnapshot.data!.get('react') ?? 0;
                         }
 
                         if (reaction == 1) {
                           provider.add(LikeEvent(index: index));
-                          print('LikeEvent');
                         } else if (reaction == 0) {
                           provider.add(NeutralEvent(index: index));
                         } else if (reaction == -1) {
@@ -74,16 +76,8 @@ class HomePage extends StatelessWidget{
                         // Data is still loading
                         // You can choose to show a loading indicator or do nothing during loading
                         //provider.add(NeutralEvent(index: index));
-                      }*/
+                      }
 
-                      /*print(index);
-                      print(snapshot.data!.docs[index].id);
-                      print(snapshot.data!.docs[index].get('commentCount'));
-                      print(snapshot.data!.docs[index].get('creationTime'));
-                      print(snapshot.data!.docs[index].get('fileLinks'));
-                      print(snapshot.data!.docs[index].get('postText'));
-                      print(snapshot.data!.docs[index].get('uid'));
-                      print(snapshot.data!.docs[index].get('reactCount'));*/
                       return postCard(
                           snapshot.data!.docs[index].id,
                           snapshot.data!.docs[index].get('commentCount'),
